@@ -235,52 +235,34 @@ def print_sample_table(news_df, n=20):
 # ---------------------------------------------------------------------------
 
 def main():
-    os.makedirs(DATA_DIR, exist_ok=True)
+news_df = news_df.dropna(subset=["publish_time"]).copy()
 
-    news_df = collect_all_news(ALL_TICKERS, use_gdelt=True)
+# Normalize timestamps so every source can be filtered consistently.
+news_df["publish_time"] = pd.to_datetime(
+    news_df["publish_time"],
+    utc=True,
+    errors="coerce",
+).dt.tz_localize(None)
 
-    if news_df.empty:
-        print("\nWARNING: no headlines collected at all. "
-              "Check internet access and API availability before proceeding.")
-        return
+news_df = news_df.dropna(subset=["publish_time"])
 
-    # Drop rows where publish_time could not be parsed
-    before_drop = len(news_df)
-    news_df     = news_df.dropna(subset=["publish_time"])
-    dropped     = before_drop - len(news_df)
-    if dropped:
-        print(f"Dropped {dropped:,} rows with unparseable publish_time")
+# END_DATE is inclusive: retain the entire final day.
+start_ts = pd.Timestamp(START_DATE)
+end_exclusive = pd.Timestamp(END_DATE) + pd.Timedelta(days=1)
 
-    news_df = deduplicate_headlines(news_df)
-    news_df = news_df.sort_values(["ticker", "publish_time"]).reset_index(drop=True)
+outside_range = ~news_df["publish_time"].between(
+    start_ts,
+    end_exclusive,
+    inclusive="left",
+)
 
-    news_df.to_csv(NEWS_FILE, index=False)
-    print(f"\nSaved {len(news_df):,} headlines to {NEWS_FILE}")
+removed = int(outside_range.sum())
+news_df = news_df.loc[~outside_range].copy()
 
-    # Safe date range — guards against NaT from failed parses
-    min_date = news_df["publish_time"].min()
-    max_date = news_df["publish_time"].max()
-    print(f"Date range : "
-          f"{min_date.date() if pd.notna(min_date) else 'N/A'}"
-          f"  →  "
-          f"{max_date.date() if pd.notna(max_date) else 'N/A'}")
-
-    # Sample table
-    print("\nSample Headlines:")
-    print_sample_table(news_df, n=20)
-
-    # Coverage summary
-    coverage = news_df.groupby("ticker").size().sort_values(ascending=False)
-    print("Headline count per ticker (top 20):")
-    print(coverage.head(20).to_string())
-
-    print("\nTickers with ZERO headlines (check these manually):")
-    zero_coverage = [t for t in ALL_TICKERS if t not in coverage.index]
-    print(zero_coverage if zero_coverage
-          else "None — every ticker got at least one headline")
-
-    print("\nSource breakdown:")
-    print(news_df["source"].value_counts().to_string())
+print(
+    f"Removed {removed:,} headlines outside "
+    f"{START_DATE} to {END_DATE}"
+)
 
 
 if __name__ == "__main__":

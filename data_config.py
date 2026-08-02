@@ -23,7 +23,7 @@ import os
 # Extra history before the 2019 backtest start is needed so the first
 # walk-forward training window has enough observations.
 
-START_DATE = "2016-01-01"
+START_DATE = "2019-01-01"
 END_DATE = "2025-12-31"
 
 
