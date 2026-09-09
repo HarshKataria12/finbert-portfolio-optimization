@@ -149,6 +149,9 @@ STRATEGIES = [
     "xgb_sentiment",    # Method 4: XGBoost + FinBERT forecast into MVO
     "equal_weight",     # benchmark: 1/N, rebalanced
     "buy_and_hold",     # benchmark: 1/N at inception, never rebalanced
+    "minimum_variance", # benchmark: ignores expected returns, risk only
+                        # (Elavia et al., 2022 find this the strongest
+                        # performer of every strategy they tested)
 ]
 
 

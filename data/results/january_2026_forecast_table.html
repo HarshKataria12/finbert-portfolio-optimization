@@ -1,0 +1,152 @@
+<style type="text/css">
+#T_aae10 caption {
+  caption-side: top;
+  background-color: #111317;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+  padding: 12px;
+}
+#T_aae10 thead th {
+  background-color: #171a1f;
+  color: #ffffff;
+  font-weight: 600;
+  text-align: center;
+  padding: 9px;
+  border: 1px solid #555b63;
+  white-space: nowrap;
+}
+#T_aae10 tbody tr:nth-child(odd) td {
+  background-color: #343a40;
+  color: #ffffff;
+}
+#T_aae10 tbody tr:nth-child(even) td {
+  background-color: #202328;
+  color: #ffffff;
+}
+#T_aae10 tbody td {
+  padding: 8px 10px;
+  border: 1px solid #555b63;
+  white-space: nowrap;
+}
+#T_aae10_row0_col0, #T_aae10_row0_col1, #T_aae10_row0_col2, #T_aae10_row0_col3, #T_aae10_row0_col4, #T_aae10_row0_col5, #T_aae10_row0_col6, #T_aae10_row0_col7, #T_aae10_row0_col8, #T_aae10_row0_col9, #T_aae10_row0_col10, #T_aae10_row0_col11, #T_aae10_row0_col12, #T_aae10_row0_col13, #T_aae10_row0_col14, #T_aae10_row0_col15, #T_aae10_row1_col0, #T_aae10_row1_col1, #T_aae10_row1_col2, #T_aae10_row1_col3, #T_aae10_row1_col4, #T_aae10_row1_col5, #T_aae10_row1_col6, #T_aae10_row1_col7, #T_aae10_row1_col8, #T_aae10_row1_col9, #T_aae10_row1_col10, #T_aae10_row1_col11, #T_aae10_row1_col12, #T_aae10_row1_col13, #T_aae10_row1_col14, #T_aae10_row1_col15, #T_aae10_row2_col0, #T_aae10_row2_col1, #T_aae10_row2_col2, #T_aae10_row2_col3, #T_aae10_row2_col4, #T_aae10_row2_col5, #T_aae10_row2_col6, #T_aae10_row2_col7, #T_aae10_row2_col8, #T_aae10_row2_col9, #T_aae10_row2_col10, #T_aae10_row2_col11, #T_aae10_row2_col12, #T_aae10_row2_col13, #T_aae10_row2_col14, #T_aae10_row2_col15, #T_aae10_row3_col0, #T_aae10_row3_col1, #T_aae10_row3_col2, #T_aae10_row3_col3, #T_aae10_row3_col4, #T_aae10_row3_col5, #T_aae10_row3_col6, #T_aae10_row3_col7, #T_aae10_row3_col8, #T_aae10_row3_col9, #T_aae10_row3_col10, #T_aae10_row3_col11, #T_aae10_row3_col12, #T_aae10_row3_col13, #T_aae10_row3_col14, #T_aae10_row3_col15, #T_aae10_row4_col0, #T_aae10_row4_col1, #T_aae10_row4_col2, #T_aae10_row4_col3, #T_aae10_row4_col4, #T_aae10_row4_col5, #T_aae10_row4_col6, #T_aae10_row4_col7, #T_aae10_row4_col8, #T_aae10_row4_col9, #T_aae10_row4_col10, #T_aae10_row4_col11, #T_aae10_row4_col12, #T_aae10_row4_col13, #T_aae10_row4_col14, #T_aae10_row4_col15 {
+  color: #ffffff;
+  border-color: #555b63;
+}
+</style>
+<table id="T_aae10" style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;">
+  <caption>Forecasted vs Actual Prices and Returns — January 2026</caption>
+  <thead>
+    <tr>
+      <th id="T_aae10_level0_col0" class="col_heading level0 col0" >Type</th>
+      <th id="T_aae10_level0_col1" class="col_heading level0 col1" >Asset</th>
+      <th id="T_aae10_level0_col2" class="col_heading level0 col2" >Ticker</th>
+      <th id="T_aae10_level0_col3" class="col_heading level0 col3" >Information date</th>
+      <th id="T_aae10_level0_col4" class="col_heading level0 col4" >Actual end date</th>
+      <th id="T_aae10_level0_col5" class="col_heading level0 col5" >Actual sessions</th>
+      <th id="T_aae10_level0_col6" class="col_heading level0 col6" >Information price</th>
+      <th id="T_aae10_level0_col7" class="col_heading level0 col7" >XGBoost predicted price</th>
+      <th id="T_aae10_level0_col8" class="col_heading level0 col8" >Sentiment predicted price</th>
+      <th id="T_aae10_level0_col9" class="col_heading level0 col9" >Markowitz predicted price</th>
+      <th id="T_aae10_level0_col10" class="col_heading level0 col10" >Actual price</th>
+      <th id="T_aae10_level0_col11" class="col_heading level0 col11" >XGBoost return</th>
+      <th id="T_aae10_level0_col12" class="col_heading level0 col12" >Sentiment return</th>
+      <th id="T_aae10_level0_col13" class="col_heading level0 col13" >Markowitz return</th>
+      <th id="T_aae10_level0_col14" class="col_heading level0 col14" >Actual return</th>
+      <th id="T_aae10_level0_col15" class="col_heading level0 col15" >Sentiment adjustment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td id="T_aae10_row0_col0" class="data row0 col0" >ETF</td>
+      <td id="T_aae10_row0_col1" class="data row0 col1" >iShares STOXX Europe 600 Retail UCITS ETF</td>
+      <td id="T_aae10_row0_col2" class="data row0 col2" >EXH8.DE</td>
+      <td id="T_aae10_row0_col3" class="data row0 col3" >31 Dec 2025</td>
+      <td id="T_aae10_row0_col4" class="data row0 col4" >30 Jan 2026</td>
+      <td id="T_aae10_row0_col5" class="data row0 col5" >21</td>
+      <td id="T_aae10_row0_col6" class="data row0 col6" >€45.53</td>
+      <td id="T_aae10_row0_col7" class="data row0 col7" >€45.87</td>
+      <td id="T_aae10_row0_col8" class="data row0 col8" >€45.86</td>
+      <td id="T_aae10_row0_col9" class="data row0 col9" >€46.03</td>
+      <td id="T_aae10_row0_col10" class="data row0 col10" >€45.69</td>
+      <td id="T_aae10_row0_col11" class="data row0 col11" >+0.75%</td>
+      <td id="T_aae10_row0_col12" class="data row0 col12" >+0.72%</td>
+      <td id="T_aae10_row0_col13" class="data row0 col13" >+1.09%</td>
+      <td id="T_aae10_row0_col14" class="data row0 col14" >+0.34%</td>
+      <td id="T_aae10_row0_col15" class="data row0 col15" >-0.02%</td>
+    </tr>
+    <tr>
+      <td id="T_aae10_row1_col0" class="data row1 col0" >Stock</td>
+      <td id="T_aae10_row1_col1" class="data row1 col1" >SAP SE</td>
+      <td id="T_aae10_row1_col2" class="data row1 col2" >SAP.DE</td>
+      <td id="T_aae10_row1_col3" class="data row1 col3" >31 Dec 2025</td>
+      <td id="T_aae10_row1_col4" class="data row1 col4" >30 Jan 2026</td>
+      <td id="T_aae10_row1_col5" class="data row1 col5" >21</td>
+      <td id="T_aae10_row1_col6" class="data row1 col6" >€204.87</td>
+      <td id="T_aae10_row1_col7" class="data row1 col7" >€209.20</td>
+      <td id="T_aae10_row1_col8" class="data row1 col8" >€209.00</td>
+      <td id="T_aae10_row1_col9" class="data row1 col9" >€209.03</td>
+      <td id="T_aae10_row1_col10" class="data row1 col10" >€167.71</td>
+      <td id="T_aae10_row1_col11" class="data row1 col11" >+2.11%</td>
+      <td id="T_aae10_row1_col12" class="data row1 col12" >+2.02%</td>
+      <td id="T_aae10_row1_col13" class="data row1 col13" >+2.03%</td>
+      <td id="T_aae10_row1_col14" class="data row1 col14" >-18.14%</td>
+      <td id="T_aae10_row1_col15" class="data row1 col15" >-0.10%</td>
+    </tr>
+    <tr>
+      <td id="T_aae10_row2_col0" class="data row2 col0" >Stock</td>
+      <td id="T_aae10_row2_col1" class="data row2 col1" >Siemens AG</td>
+      <td id="T_aae10_row2_col2" class="data row2 col2" >SIE.DE</td>
+      <td id="T_aae10_row2_col3" class="data row2 col3" >31 Dec 2025</td>
+      <td id="T_aae10_row2_col4" class="data row2 col4" >30 Jan 2026</td>
+      <td id="T_aae10_row2_col5" class="data row2 col5" >21</td>
+      <td id="T_aae10_row2_col6" class="data row2 col6" >€234.17</td>
+      <td id="T_aae10_row2_col7" class="data row2 col7" >€234.66</td>
+      <td id="T_aae10_row2_col8" class="data row2 col8" >€234.76</td>
+      <td id="T_aae10_row2_col9" class="data row2 col9" >€238.02</td>
+      <td id="T_aae10_row2_col10" class="data row2 col10" >€250.96</td>
+      <td id="T_aae10_row2_col11" class="data row2 col11" >+0.21%</td>
+      <td id="T_aae10_row2_col12" class="data row2 col12" >+0.25%</td>
+      <td id="T_aae10_row2_col13" class="data row2 col13" >+1.64%</td>
+      <td id="T_aae10_row2_col14" class="data row2 col14" >+7.17%</td>
+      <td id="T_aae10_row2_col15" class="data row2 col15" >+0.04%</td>
+    </tr>
+    <tr>
+      <td id="T_aae10_row3_col0" class="data row3 col0" >Stock</td>
+      <td id="T_aae10_row3_col1" class="data row3 col1" >LVMH</td>
+      <td id="T_aae10_row3_col2" class="data row3 col2" >MC.PA</td>
+      <td id="T_aae10_row3_col3" class="data row3 col3" >31 Dec 2025</td>
+      <td id="T_aae10_row3_col4" class="data row3 col4" >30 Jan 2026</td>
+      <td id="T_aae10_row3_col5" class="data row3 col5" >21</td>
+      <td id="T_aae10_row3_col6" class="data row3 col6" >€634.65</td>
+      <td id="T_aae10_row3_col7" class="data row3 col7" >€641.30</td>
+      <td id="T_aae10_row3_col8" class="data row3 col8" >€640.02</td>
+      <td id="T_aae10_row3_col9" class="data row3 col9" >€631.85</td>
+      <td id="T_aae10_row3_col10" class="data row3 col10" >€538.13</td>
+      <td id="T_aae10_row3_col11" class="data row3 col11" >+1.05%</td>
+      <td id="T_aae10_row3_col12" class="data row3 col12" >+0.85%</td>
+      <td id="T_aae10_row3_col13" class="data row3 col13" >-0.44%</td>
+      <td id="T_aae10_row3_col14" class="data row3 col14" >-15.21%</td>
+      <td id="T_aae10_row3_col15" class="data row3 col15" >-0.20%</td>
+    </tr>
+    <tr>
+      <td id="T_aae10_row4_col0" class="data row4 col0" >Stock</td>
+      <td id="T_aae10_row4_col1" class="data row4 col1" >Nestlé SA</td>
+      <td id="T_aae10_row4_col2" class="data row4 col2" >NESN.SW</td>
+      <td id="T_aae10_row4_col3" class="data row4 col3" >31 Dec 2025</td>
+      <td id="T_aae10_row4_col4" class="data row4 col4" >02 Feb 2026</td>
+      <td id="T_aae10_row4_col5" class="data row4 col5" >21</td>
+      <td id="T_aae10_row4_col6" class="data row4 col6" >€81.44</td>
+      <td id="T_aae10_row4_col7" class="data row4 col7" >€82.24</td>
+      <td id="T_aae10_row4_col8" class="data row4 col8" >€82.16</td>
+      <td id="T_aae10_row4_col9" class="data row4 col9" >€81.07</td>
+      <td id="T_aae10_row4_col10" class="data row4 col10" >€72.55</td>
+      <td id="T_aae10_row4_col11" class="data row4 col11" >+0.98%</td>
+      <td id="T_aae10_row4_col12" class="data row4 col12" >+0.88%</td>
+      <td id="T_aae10_row4_col13" class="data row4 col13" >-0.45%</td>
+      <td id="T_aae10_row4_col14" class="data row4 col14" >-10.92%</td>
+      <td id="T_aae10_row4_col15" class="data row4 col15" >-0.10%</td>
+    </tr>
+  </tbody>
+</table>

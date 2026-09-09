@@ -281,6 +281,8 @@ COMPARISONS = [
     ("xgb_sentiment", "hrp"),
     ("xgb_sentiment", "equal_weight"),
     ("xgb", "markowitz"),
+    ("xgb", "hrp"),
+    ("xgb", "equal_weight"),
     ("hrp", "markowitz"),
     ("hrp", "equal_weight"),
     ("markowitz", "equal_weight"),

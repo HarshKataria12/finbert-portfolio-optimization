@@ -1,73 +1,84 @@
-"""
-data_config.py
-
-Central configuration for the thesis data pipeline.
-
-Contains:
-    - Historical date range
-    - ETF and equity universe
-    - Foreign-exchange conversion mappings
-    - Input and output file paths
-    - Alpha Vantage API-key configuration
-
-The data directory is resolved relative to this file, so the scripts work
-regardless of the terminal's current working directory.
-"""
+from __future__ import annotations
 
 import os
+import re
+
+
+def load_simple_dotenv(path: str) -> None:
+    """Load KEY=VALUE entries without requiring python-dotenv.
+
+    Existing exported variables take priority. Spaces around '=' and matching
+    single or double quotes around values are accepted.
+    """
+    if not os.path.isfile(path):
+        return
+    with open(path, encoding="utf-8-sig") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("export "):
+                line = line[len("export ") :].lstrip()
+            key, separator, raw_value = line.partition("=")
+            key = key.strip()
+            if not separator or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key):
+                continue
+            value = raw_value.strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+                value = value[1:-1]
+            os.environ.setdefault(key, value)
+
+
+# Resolve everything relative to this file, never the terminal working directory.
+MODEL_DIR = os.path.dirname(os.path.abspath(__file__))
+DOTENV_FILE = os.path.join(MODEL_DIR, ".env")
+load_simple_dotenv(DOTENV_FILE)
 
 
 # ---------------------------------------------------------------------------
-# Date Range
+# Date range
 # ---------------------------------------------------------------------------
-# Extra history before the 2019 backtest start is needed so the first
-# walk-forward training window has enough observations.
 
-START_DATE = "2019-01-01"
-END_DATE = "2025-12-31"
+START_DATE = "2016-01-01"
+END_DATE = "2026-01-01"
 
 
 # ---------------------------------------------------------------------------
-# ETF Universe
+# Asset universe — these names are also the news-search names
 # ---------------------------------------------------------------------------
 
 ETFS = {
     # Broad European market
-    "EXSA.DE": "iShares STOXX Europe 600",
+    "EXSA.DE": "iShares STOXX Europe 600 UCITS ETF",
 
-    # STOXX Europe 600 sector ETFs
-    "EXV1.DE": "iShares STOXX Europe 600 Banks",
-    "EXV4.DE": "iShares STOXX Europe 600 Health Care",
-    "EXV3.DE": "iShares STOXX Europe 600 Technology",
-    "EXV2.DE": "iShares STOXX Europe 600 Oil & Gas",
-    "EXV6.DE": "iShares STOXX Europe 600 Industrial Goods",
-    "EXV7.DE": "iShares STOXX Europe 600 Retail",
-    "EXH7.DE": "iShares STOXX Europe 600 Food & Beverage",
-    "EXH8.DE": "iShares STOXX Europe 600 Utilities",
+    # STOXX Europe 600 sector ETFs (correct ticker-to-sector mappings)
+    "EXV1.DE": "iShares STOXX Europe 600 Banks UCITS ETF",
+    "EXV4.DE": "iShares STOXX Europe 600 Health Care UCITS ETF",
+    "EXV3.DE": "iShares STOXX Europe 600 Technology UCITS ETF",
+    "EXV2.DE": "iShares STOXX Europe 600 Telecommunications UCITS ETF",
+    "EXV6.DE": "iShares STOXX Europe 600 Basic Resources UCITS ETF",
+    "EXV7.DE": "iShares STOXX Europe 600 Chemicals UCITS ETF",
+    "EXH7.DE": "iShares STOXX Europe 600 Personal Household Goods UCITS ETF",
+    "EXH8.DE": "iShares STOXX Europe 600 Retail UCITS ETF",
 
     # Country ETFs
-    "EXS1.DE": "iShares Core DAX (Germany)",
-    "CAC.PA": "Amundi CAC 40 (France)",
-    "EWI": "iShares MSCI Italy",
-    "EWP": "iShares MSCI Spain",
-    "EWN": "iShares MSCI Netherlands",
-    "EWL": "iShares MSCI Switzerland",
+    "EXS1.DE": "iShares Core DAX UCITS ETF Germany",
+    "CAC.PA": "Amundi CAC 40 UCITS ETF France",
+    "EWI": "iShares MSCI Italy ETF",
+    "EWP": "iShares MSCI Spain ETF",
+    "EWN": "iShares MSCI Netherlands ETF",
+    "EWL": "iShares MSCI Switzerland ETF",
 }
-
-
-# ---------------------------------------------------------------------------
-# Equity Universe
-# ---------------------------------------------------------------------------
 
 EQUITIES = {
     # Germany
-    "SAP.DE": "SAP",
-    "SIE.DE": "Siemens",
-    "BAS.DE": "BASF",
-    "VOW3.DE": "Volkswagen",
+    "SAP.DE": "SAP SE",
+    "SIE.DE": "Siemens AG",
+    "BAS.DE": "BASF SE",
+    "VOW3.DE": "Volkswagen AG",
     "DTE.DE": "Deutsche Telekom",
-    "ALV.DE": "Allianz",
-    "BMW.DE": "BMW",
+    "ALV.DE": "Allianz SE",
+    "BMW.DE": "BMW AG",
     "MBG.DE": "Mercedes-Benz Group",
     "MUV2.DE": "Munich Re",
 
@@ -83,7 +94,7 @@ EQUITIES = {
     "AI.PA": "Air Liquide",
 
     # Netherlands
-    "ASML.AS": "ASML",
+    "ASML.AS": "ASML Holding",
     "PHIA.AS": "Philips",
     "INGA.AS": "ING Group",
     "HEIA.AS": "Heineken",
@@ -94,280 +105,130 @@ EQUITIES = {
     "SAN.MC": "Banco Santander",
     "IBE.MC": "Iberdrola",
     "ITX.MC": "Inditex",
-    "BBVA.MC": "BBVA",
     "TEF.MC": "Telefonica",
-    "FER.MC": "Ferrovial",
+    "ENG.MC": "Enagas",
+    "BBVA.MC": "Banco Bilbao Vizcaya Argentaria",
 
     # Switzerland
     "NESN.SW": "Nestle",
     "NOVN.SW": "Novartis",
-    "UBSG.SW": "UBS",
-
-    # Roche voting shares are used instead of ROG.SW because RO.SW
-    # downloads more reliably in the current pipeline.
-    "RO.SW": "Roche Holding AG",
-
-    "ABBN.SW": "ABB",
+    "UBSG.SW": "UBS Group",
+    "RO.SW": "Roche Holding",
+    "ABBN.SW": "ABB Ltd",
     "CFR.SW": "Richemont",
     "HOLN.SW": "Holcim",
 
     # Italy
-    "ENI.MI": "ENI",
+    "ENI.MI": "Eni SpA",
     "ISP.MI": "Intesa Sanpaolo",
     "UCG.MI": "UniCredit",
     "ENEL.MI": "Enel",
     "STMMI.MI": "STMicroelectronics",
 }
 
-
-# Combined asset universe
-
-ALL_TICKERS = {
-    **ETFS,
-    **EQUITIES,
-}
+ALL_TICKERS = {**ETFS, **EQUITIES}
 
 
 # ---------------------------------------------------------------------------
-# Foreign-Exchange Conversion
+# Foreign-exchange conversion
 # ---------------------------------------------------------------------------
-# These assets are not already priced in EUR and require conversion.
-#
-# Every key must exactly match a ticker in ALL_TICKERS. A mismatch would
-# cause the downstream conversion process to skip that asset.
 
 NON_EUR_TICKERS = {
     "NESN.SW": "CHFEUR=X",
     "NOVN.SW": "CHFEUR=X",
     "UBSG.SW": "CHFEUR=X",
     "RO.SW": "CHFEUR=X",
+    "ABBN.SW": "CHFEUR=X",
+    "CFR.SW": "CHFEUR=X",
+    "HOLN.SW": "CHFEUR=X",
+    "EWI": "USDEUR=X",
+    "EWP": "USDEUR=X",
+    "EWN": "USDEUR=X",
+    "EWL": "USDEUR=X",
 }
 
 
 # ---------------------------------------------------------------------------
-# File Paths
+# File paths
 # ---------------------------------------------------------------------------
-# data_config.py is expected to be stored in:
-#
-#     /Users/harshkataria/Desktop/Thesis/model/data_config.py
-#
-# Data will therefore be stored in:
-#
-#     /Users/harshkataria/Desktop/Thesis/model/data
-#
-# Using absolute paths based on __file__ prevents errors when a script is
-# launched from a different terminal directory.
 
-MODEL_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)
+DATA_DIR = os.path.join(MODEL_DIR, "data")
 
-DATA_DIR = os.path.join(
-    MODEL_DIR,
-    "data"
-)
-
-
-# Price-pipeline files
-
-RAW_PRICES_FILE = os.path.join(
-    DATA_DIR,
-    "raw_prices.csv"
-)
-
-RAW_VOLUME_FILE = os.path.join(
-    DATA_DIR,
-    "raw_volume.csv"
-)
-
-BAD_TICKERS_FILE = os.path.join(
-    DATA_DIR,
-    "bad_tickers.csv"
-)
-
-PATCHED_PRICES_FILE = os.path.join(
-    DATA_DIR,
-    "patched_prices.csv"
-)
-
-EUR_PRICES_FILE = os.path.join(
-    DATA_DIR,
-    "prices_eur_unfilled.csv"
-)
-
-CLEAN_PRICES_FILE = os.path.join(
-    DATA_DIR,
-    "clean_prices_eur.csv"
-)
-
-
-# News-pipeline input
-
-NEWS_FILE = os.path.join(
-    DATA_DIR,
-    "news_headlines.csv"
-)
-
-
-# FinBERT sentiment output
-
-SENTIMENT_FILE = os.path.join(
-    DATA_DIR,
-    "daily_sentiment.csv"
-)
-# Feature-engineering output
-FEATURES_FILE = os.path.join(
-    DATA_DIR,
-    "features.csv"
-)
-RISKFREE_RATE_FILE = os.path.join(
-    DATA_DIR,
-    "euribor_3m.csv"
-)
-
-# ---------------------------------------------------------------------------
-# Alpha Vantage
-# ---------------------------------------------------------------------------
-# The API key is read from an environment variable instead of being stored
-# directly in this source file.
-#
-# Set it in the terminal with:
-#
-#     export ALPHA_VANTAGE_API_KEY="your_real_key_here"
-
-ALPHA_VANTAGE_API_KEY = os.environ.get(
-    "ALPHA_VANTAGE_API_KEY",
-    "YOUR_KEY_HERE"
-)
+RAW_PRICES_FILE = os.path.join(DATA_DIR, "raw_prices.csv")
+RAW_VOLUME_FILE = os.path.join(DATA_DIR, "raw_volume.csv")
+BAD_TICKERS_FILE = os.path.join(DATA_DIR, "bad_tickers.csv")
+PATCHED_PRICES_FILE = os.path.join(DATA_DIR, "patched_prices.csv")
+EUR_PRICES_FILE = os.path.join(DATA_DIR, "prices_eur_unfilled.csv")
+CLEAN_PRICES_FILE = os.path.join(DATA_DIR, "clean_prices_eur.csv")
+NEWS_FILE = os.path.join(DATA_DIR, "news_headlines.csv")
+SENTIMENT_FILE = os.path.join(DATA_DIR, "daily_sentiment.csv")
+FEATURES_FILE = os.path.join(DATA_DIR, "features.csv")
+RISKFREE_RATE_FILE = os.path.join(DATA_DIR, "euribor_3m.csv")
 
 
 # ---------------------------------------------------------------------------
-# Configuration Tests
+# API keys — values come only from .env or an exported environment variable
 # ---------------------------------------------------------------------------
 
-def check_ticker_configuration():
-    """Check that currency-conversion tickers exist in the universe."""
-    print("\nChecking foreign-exchange ticker configuration...")
+ALPHA_VANTAGE_API_KEY = os.environ.get("ALPHA_VANTAGE_API_KEY", "").strip()
+MARKETAUX_API_TOKEN = os.environ.get("MARKETAUX_API_TOKEN", "").strip()
 
-    mismatched_tickers = [
-        ticker
-        for ticker in NON_EUR_TICKERS
-        if ticker not in ALL_TICKERS
-    ]
 
-    if mismatched_tickers:
-        print(
-            "WARNING: The following NON_EUR_TICKERS entries "
-            "do not exist in ALL_TICKERS:"
-        )
+def check_ticker_configuration() -> bool:
+    """Validate ticker mappings and return True when they are consistent."""
+    print("\nChecking ticker configuration...")
+    passed = True
 
-        for ticker in mismatched_tickers:
-            print(f"  - {ticker}")
+    overlap = sorted(set(ETFS) & set(EQUITIES))
+    if overlap:
+        print(f"FAIL: ETF/equity ticker overlap: {overlap}")
+        passed = False
 
-        print(
-            "These tickers may be skipped during EUR conversion."
-        )
+    mismatched = sorted(set(NON_EUR_TICKERS) - set(ALL_TICKERS))
+    if mismatched:
+        print(f"FAIL: FX mappings absent from ALL_TICKERS: {mismatched}")
+        passed = False
 
-        return False
+    empty_names = sorted(ticker for ticker, name in ALL_TICKERS.items() if not name.strip())
+    if empty_names:
+        print(f"FAIL: Empty asset names: {empty_names}")
+        passed = False
 
-    print(
-        "PASS: Every NON_EUR_TICKERS entry exists "
-        "in ALL_TICKERS."
-    )
+    if passed:
+        print("PASS: ticker and currency mappings are consistent")
+    return passed
 
+
+def check_file_paths() -> bool:
+    """Create the data directory and display configured output paths."""
+    os.makedirs(DATA_DIR, exist_ok=True)
+    print("\nChecking paths...")
+    print(f"Model directory: {MODEL_DIR}")
+    print(f"Data directory:  {DATA_DIR}")
+    print(f"News file:       {NEWS_FILE}")
+    print("PASS: data directory exists")
     return True
 
 
-def check_file_paths():
-    """Create the data directory and print all configured paths."""
-    print("\nChecking file-path configuration...")
-
-    os.makedirs(
-        DATA_DIR,
-        exist_ok=True
-    )
-
-    print(f"Model directory:  {MODEL_DIR}")
-    print(f"Data directory:   {DATA_DIR}")
-    print(f"News input:       {NEWS_FILE}")
-    print(f"Sentiment output: {SENTIMENT_FILE}")
-    print(f"Features output:  {FEATURES_FILE}")
-    print(f"Risk-free rate output:  {RISKFREE_RATE_FILE}")
-
-    if not os.path.isdir(DATA_DIR):
-        print("FAIL: Data directory is unavailable.")
-        return False
-
-    print("PASS: Data directory exists.")
-
-    if os.path.exists(NEWS_FILE):
-        print("PASS: News-headline file exists.")
-    else:
-        print("WARNING: News-headline file does not exist.")
-        print(f"Expected location: {NEWS_FILE}")
-        print("Run the news-collection script first.")
-
-    return True
-
-
-def print_configuration_summary():
-    """Print a summary of the configured research universe."""
+def print_configuration_summary() -> None:
     print("\n" + "=" * 72)
     print("DATA CONFIGURATION SUMMARY")
     print("=" * 72)
-
-    print(f"\nStart date: {START_DATE}")
-    print(f"End date:   {END_DATE}")
-
-    print(
-        f"\nUniverse size: {len(ALL_TICKERS)} assets"
-    )
-
-    print(
-        f"ETFs:           {len(ETFS)}"
-    )
-
-    print(
-        f"Equities:       {len(EQUITIES)}"
-    )
-
-    print(
-        f"Non-EUR assets: {len(NON_EUR_TICKERS)}"
-    )
+    print(f"Date range:     {START_DATE} to {END_DATE}")
+    print(f"Universe size: {len(ALL_TICKERS)}")
+    print(f"ETFs:          {len(ETFS)}")
+    print(f"Equities:      {len(EQUITIES)}")
+    print(f"Non-EUR:       {len(NON_EUR_TICKERS)}")
+    print(f"Alpha Vantage key loaded: {bool(ALPHA_VANTAGE_API_KEY)}")
+    print(f"Marketaux key loaded:     {bool(MARKETAUX_API_TOKEN)}")
 
 
-def main():
-    """Run configuration tests when this file is executed directly."""
+def main() -> int:
     print_configuration_summary()
-
-    ticker_test_passed = check_ticker_configuration()
-    path_test_passed = check_file_paths()
-
-    print("\n" + "=" * 72)
-    print("CONFIGURATION TEST RESULTS")
-    print("=" * 72)
-
-    print(
-        "Ticker configuration: "
-        + ("PASS" if ticker_test_passed else "FAIL")
-    )
-
-    print(
-        "File-path configuration: "
-        + ("PASS" if path_test_passed else "FAIL")
-    )
-
-    if ticker_test_passed and path_test_passed:
-        print(
-            "\nThe configuration is ready for the "
-            "data-processing scripts."
-        )
-    else:
-        print(
-            "\nCorrect the reported configuration issues "
-            "before running the pipeline."
-        )
+    passed = check_ticker_configuration() and check_file_paths()
+    print("\nConfiguration:", "PASS" if passed else "FAIL")
+    return 0 if passed else 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

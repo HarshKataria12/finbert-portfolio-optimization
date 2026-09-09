@@ -57,10 +57,11 @@ from backtest_config import (
     TURNOVER_FILE,
     FEATURE_IMPORTANCE_FILE,
 )
-from optimizers import (
+from optimizer import (
     ledoit_wolf_covariance,
     historical_mean_returns,
     mean_variance_weights,
+    minimum_variance_weights,
     hrp_weights,
     equal_weights,
 )
@@ -141,8 +142,12 @@ def build_weights_for_date(as_of, returns, panel, trading_dates,
     # Method 1: classical mean-variance with shrunk covariance
     weights["markowitz"] = mean_variance_weights(mu_historical, covariance)
 
-    # Method 2: hierarchical risk parity
+# Method 2: hierarchical risk parity
     weights["hrp"] = hrp_weights(lookback)
+
+    # Benchmark: minimum-variance, ignores expected returns entirely and
+    # optimises purely on the shrunk covariance matrix
+    weights["minimum_variance"] = minimum_variance_weights(covariance)
 
     # Methods 3 and 4: XGBoost forecast feeding the same optimizer
     for name in ("xgb", "xgb_sentiment"):
@@ -229,20 +234,30 @@ def simulate(returns, weight_schedule, all_tickers,
         pending_cost = 0.0
 
         if day in rebalance_set:
-            target = weight_schedule[day].reindex(all_tickers).fillna(0.0)
-            if damping < 1.0:
-                target = damping * target + (1.0 - damping) * holdings
-                total_target = target.sum()
-                if total_target > 0:
-                    target = target / total_target
-            traded = float((target - holdings).abs().sum())
-            # Costs are incurred at the close of the rebalancing day and
-            # are booked against the following day's return, matching the
-            # convention that new weights only earn from t + 1.
-            pending_cost = traded * transaction_cost
-            turnover_rows.append({"date": day, "turnover": traded,
-                                  "cost": pending_cost})
-            holdings = target
+            is_final_day = (day == sim_dates[-1])
+            if is_final_day:
+                # No subsequent trading day exists to book this cost
+                # against, and no future return would ever use these new
+                # weights. Skip constructing a rebalance nobody could
+                # ever trade on, rather than logging a cost that then
+                # silently never gets deducted from anything.
+                print(f"  Skipping rebalance on {day.date()}: "
+                      f"no subsequent trading day to apply it to.")
+            else:
+                target = weight_schedule[day].reindex(all_tickers).fillna(0.0)
+                if damping < 1.0:
+                    target = damping * target + (1.0 - damping) * holdings
+                    total_target = target.sum()
+                    if total_target > 0:
+                        target = target / total_target
+                traded = float((target - holdings).abs().sum())
+                # Costs are incurred at the close of the rebalancing day and
+                # are booked against the following day's return, matching the
+                # convention that new weights only earn from t + 1.
+                pending_cost = traded * transaction_cost
+                turnover_rows.append({"date": day, "turnover": traded,
+                                      "cost": pending_cost})
+                holdings = target
 
         net_returns[day] = gross - cost_today
 

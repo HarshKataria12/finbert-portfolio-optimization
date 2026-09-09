@@ -47,6 +47,21 @@ def training_cutoff(trading_dates, rebalance_date, embargo=EMBARGO_DAYS):
     if cutoff_position < 0:
         return None
     return trading_dates[cutoff_position]
+
+
+def zscore_with_training_stats(train_df, predict_df):
+    """Z-score both frames using mean/std computed from the training frame
+    only, so no information from the prediction date leaks into the
+    normalisation statistics. A zero standard deviation (a feature that is
+    constant across the whole training window) is replaced with 1.0 so it
+    doesn't produce a divide-by-zero."""
+    mean = train_df.mean()
+    std = train_df.std().replace(0.0, np.nan).fillna(1.0)
+    train_z = (train_df - mean) / std
+    predict_z = (predict_df - mean) / std
+    return train_z, predict_z
+
+
 class ReturnForecaster:
     def __init__(self, feature_cols, params=None,
                  train_window_days=TRAIN_WINDOW_DAYS,
@@ -60,20 +75,31 @@ class ReturnForecaster:
         self.model = None
         self.last_train_rows = 0
         self.last_train_end = None
+        self._last_mean = None
+        self._last_std = None
 
-def _training_slice(self, panel, trading_dates, rebalance_date):
+    def _training_slice(self, panel, trading_dates, rebalance_date):
         cutoff = training_cutoff(trading_dates, rebalance_date, self.embargo)
         if cutoff is None:
             return None, None
 
         mask = panel["date"] <= cutoff
         if self.train_window_days is not None:
-            window_start = cutoff - pd.Timedelta(days=self.train_window_days)
+            # train_window_days counts TRADING days (matching how it's
+            # described everywhere else in this thesis), not calendar
+            # days -- select by position in the trading calendar, not by
+            # a calendar-day Timedelta, which would understate the
+            # window by roughly 30% (1,260 calendar days is ~3.45 years,
+            # not the intended 5 trading years).
+            cutoff_pos = trading_dates.searchsorted(cutoff, side="right") - 1
+            start_pos = max(0, cutoff_pos - self.train_window_days + 1)
+            window_start = trading_dates[start_pos]
             mask &= panel["date"] >= window_start
 
         train = panel.loc[mask].dropna(subset=self.feature_cols + ["target"])
         return train, cutoff
-def fit_predict(self, panel, trading_dates, rebalance_date,
+
+    def fit_predict(self, panel, trading_dates, rebalance_date,
                     universe=None, refit=True):
         predict_slice = panel[panel["date"] == pd.Timestamp(rebalance_date)]
         predict_slice = predict_slice.dropna(subset=self.feature_cols)
@@ -96,12 +122,14 @@ def fit_predict(self, panel, trading_dates, rebalance_date,
             self._last_mean = train[self.feature_cols].mean()
             self._last_std = (train[self.feature_cols].std()
                               .replace(0.0, np.nan).fillna(1.0))
+            predictions = self.model.predict(predict_x.values)
         else:
             predict_x = ((predict_slice[self.feature_cols] - self._last_mean)
                          / self._last_std)
             predictions = self.model.predict(predict_x.values)
         return pd.Series(predictions, index=predict_slice["ticker"].values)
-def feature_importance(self):
+
+    def feature_importance(self):
         if self.model is None:
             return None
         booster = self.model.get_booster()
@@ -131,10 +159,17 @@ def main():
                       / prices[ticker].iloc[500])
     actual = panel.loc[(panel["date"] == probe_date)
                        & (panel["ticker"] == ticker), "target"]
+    diff = float((expected - actual).abs().max()) if len(actual) else float("nan")
+    print(f"\nTarget alignment check: |expected - actual| max diff = {diff:.2e} "
+          f"({'PASS' if diff < 1e-8 else 'FAIL'})")
+
     trading_dates = pd.DatetimeIndex(sorted(panel["date"].unique()))
     probe = trading_dates[1000]
     cutoff = training_cutoff(trading_dates, probe)
     gap = trading_dates.searchsorted(probe) - trading_dates.searchsorted(cutoff)
+    print(f"Embargo check at {probe.date()}: cutoff {cutoff.date()}, "
+          f"{gap} trading days purged (expect {EMBARGO_DAYS})")
+
     panel.to_csv(PANEL_FILE, index=False)
     print(f"\nSaved panel to {PANEL_FILE}")
 
